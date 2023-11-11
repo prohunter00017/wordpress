@@ -42,10 +42,13 @@ if [ -z "$git_location" ]; then
 fi
 
 echo "Cloning the repository to the /var/www/$domain directory..."
-if [ "$(ls -A /var/www/$domain)" ]; then
-    echo "/var/www/$domain is not Empty. Deleting its contents..."
-    sudo rm -rf /var/www/$domain/*
+if [ -d "/var/www/$domain/.git" ]; then
+    echo "/var/www/$domain is a Git repository. Removing it..."
+    sudo rm -rf /var/www/$domain
 fi
+sudo mkdir -p /var/www/$domain
+sudo chown -R www-data:www-data /var/www/$domain
+sudo chmod -R 755 /var/www/$domain
 if ! sudo git clone $git_location /var/www/$domain; then
     echo "Failed to clone repository. Please check your Git location and try again."
     exit 1
