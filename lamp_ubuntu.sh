@@ -19,8 +19,10 @@ sudo apt-get install -y php libapache2-mod-php php-mysql
 echo "Please enter the domain name:"
 read domain_name
 
-# Create a directory in /var/www with the domain name
-sudo mkdir /var/www/$domain_name
+# Create a directory in /var/www with the domain name if it doesn't exist
+if [ ! -d "/var/www/$domain_name" ]; then
+    sudo mkdir /var/www/$domain_name
+fi
 
 # Change ownership of the directory to www-data
 sudo chown -R www-data:www-data /var/www/$domain_name
@@ -46,13 +48,7 @@ done
 echo "Please enter the repository SSH URL (e.g., git@github.com:username/repo.git):"
 read repo_url
 
-# Check if the directory exists and is empty
-if [ -d "/var/www/$domain_name" ] && [ -z "$(ls -A /var/www/$domain_name)" ]; then
-    # Switch to the www-data user and clone the repository
-    sudo su -l www-data -s /bin/bash << EOF
-    GIT_SSH_COMMAND="ssh -i /var/www/$domain_name/id_rsa" git clone $repo_url /var/www/$domain_name
+# Switch to the www-data user and clone the repository
+sudo su -l www-data -s /bin/bash << EOF
+GIT_SSH_COMMAND="ssh -i /var/www/$domain_name/id_rsa" git clone -f $repo_url /var/www/$domain_name
 EOF
-else
-    echo "The directory /var/www/$domain_name already exists and is not empty. Please choose a different domain name or empty the directory."
-    exit 1
-fi
