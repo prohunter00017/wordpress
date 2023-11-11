@@ -1,83 +1,53 @@
 #!/bin/bash
 
-# Required Information
-export DB_NAME=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1) # generates a random database name
-export DB_USER=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1) # generates a random user name
-export DB_PASSWORD=$(openssl rand -base64 32) # generates a random password
+# Update package list
+sudo apt-get update
 
-# Phase One
+# Install Apache
+sudo apt-get install -y apache2
 
-# Step 1: Update the package lists
-sudo apt-get update -y
+# Start Apache service
+sudo systemctl start apache2
 
-# Step 2: Install Apache
-sudo apt-get install apache2 -y
+# Install Git
+sudo apt-get install -y git
 
-# Step 3: Enable Apache on boot
-sudo systemctl enable apache2
+# Install PHP
+sudo apt-get install -y php libapache2-mod-php php-mysql
 
-# Step 4: Allow HTTP and HTTPS traffic
-sudo ufw allow in "Apache Full"
+# Ask for domain name
+echo "Please enter the domain name:"
+read domain_name
 
-# Step 5: Install MySQL
-sudo apt-get install mysql-server -y
+# Create a directory in /var/www with the domain name
+sudo mkdir /var/www/$domain_name
 
-# Step 6: Secure MySQL Installation
-# Install expect
-sudo apt-get -y install expect
+# Change ownership of the directory to www-data
+sudo chown -R www-data:www-data /var/www/$domain_name
 
-SECURE_MYSQL=$(expect -c "
-set timeout 10
-spawn mysql_secure_installation
-expect \"Enter current password for root (enter for none):\"
-send \"$DB_PASSWORD\r\"
-expect \"Change the root password?\"
-send \"n\r\"
-expect \"Remove anonymous users?\"
-send \"y\r\"
-expect \"Disallow root login remotely?\"
-send \"y\r\"
-expect \"Remove test database and access to it?\"
-send \"y\r\"
-expect \"Reload privilege tables now?\"
-send \"y\r\"
-expect eof
-")
+# Generate SSH key for Apache user
+sudo -u www-data ssh-keygen -t rsa -b 4096 -f /var/www/$domain_name/id_rsa
 
-echo "$SECURE_MYSQL"
+# Print the public key
+echo "Here is your public key. You will need to add this to your repository's deploy keys:"
+sudo cat /var/www/$domain_name/id_rsa.pub
 
-# Step 7: Install PHP
-sudo apt-get install php libapache2-mod-php php-mysql -y
+# Ask for confirmation before proceeding
+while true; do
+    read -p "Have you added the deploy key to your repository? (yes/no) " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) echo "Please add the deploy key and then run this script again."; exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 
-# Step 8: Test PHP
-# This will create a test PHP file in the web root
-echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/test.php
+# Ask for repository SSH URL
+echo "Please enter the repository SSH URL (e.g., git@github.com:username/repo.git):"
+read repo_url
 
+# Switch to the www-data user and clone the repository
+sudo su -l www-data -s /bin/bash << EOF
+GIT_SSH_COMMAND="ssh -i /var/www/$domain_name/id_rsa" git clone $repo_url /var/www/$domain_name
+EOF
 
-# Step 9: Install Git
-# This command installs Git, a distributed version control system.
-sudo apt-get install git -y
-
-# Step 10: Set up GitHub SSH
-# This command generates a new SSH key pair. You'll use this for authenticating with GitHub.
-ssh-keygen -t rsa -b 4096 -C "iamhamzazoubir@icloud.com"
-
-
-# This command starts the ssh-agent in the background.
-eval "$(ssh-agent -s)"
-
-# This command adds your SSH private key to the ssh-agent.
-ssh-add ~/.ssh/id_rsa
-
-# This command displays your public key. You'll need to add this to your GitHub account.
-cat ~/.ssh/id_rsa.pub
-
-
-# Print database details to the terminal
-echo "Database Name: $DB_NAME"
-echo "User Name: $DB_USER"
-echo "Password: $DB_PASSWORD"
-
-# Print SSH public key to the terminal
-echo "SSH Public Key:"
-cat ~/.ssh/id_rsa.pub
