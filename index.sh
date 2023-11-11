@@ -21,17 +21,9 @@ if [ -z "$domain" ]; then
     exit 1
 fi
 
-echo "Please enter your domain:"
-read domain
-
-if [ -z "$domain" ]; then
-    echo "Domain is not set. Please enter a valid domain."
-    exit 1
-fi
-
 # Generate a new SSH key for the domain
 echo "Generating a new SSH key for $domain..."
-ssh-keygen -t rsa -b 4096 -C "$domain" -f ~/.ssh/$domain -N ""
+ssh-keygen -t rsa -b 4096 -C "iamhamzazoubir@icloud.com" -f ~/.ssh/$domain -N ""
 
 # Add the new SSH key to the ssh-agent
 echo "Adding the new SSH key to the ssh-agent..."
@@ -51,7 +43,6 @@ while true; do
         * ) echo "Please answer yes or no.";;
     esac
 done
-
 
 # Create the /var/www/$domain directory
 echo "Creating /var/www/$domain directory..."
