@@ -16,6 +16,18 @@ sudo systemctl start apache2
 echo "Please enter your domain:"
 read domain
 
+# Create the /var/www/$domain directory
+echo "Creating /var/www/$domain directory..."
+sudo mkdir -p /var/www/$domain
+
+# Give the www-data user ownership of the directory
+echo "Setting ownership of /var/www/$domain to www-data..."
+sudo chown -R www-data:www-data /var/www/$domain
+
+# Set the correct permissions on the directory
+echo "Setting permissions of /var/www/$domain..."
+sudo chmod -R 755 /var/www/$domain
+
 echo "Please enter your SSH Git location:"
 read git_location
 
