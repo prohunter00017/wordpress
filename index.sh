@@ -44,9 +44,8 @@ read repo
 echo "Please enter your GitHub personal access token:"
 read token
 
-# Prompt for webhook URL
-echo "Please enter your webhook URL:"
-read webhook_url
+# The URL of the script on your server that will handle the webhook
+webhook_url="http://$domain/webhook-handler-script"
 
 # Create the webhook
 echo "Creating the webhook..."
