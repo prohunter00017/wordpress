@@ -46,6 +46,17 @@ sudo mkdir -p /var/www/$domain_name
 # Copy the extracted WordPress files to the new directory
 sudo cp -a wordpress/. /var/www/$domain_name
 
+# Copy the sample configuration file to the live configuration file
+sudo cp /var/www/$domain_name/wp-config-sample.php /var/www/$domain_name/wp-config.php
+
+# Set the database details in the wp-config.php file
+sudo sed -i "s/database_name_here/$db_name/g" /var/www/$domain_name/wp-config.php
+sudo sed -i "s/username_here/$db_user/g" /var/www/$domain_name/wp-config.php
+sudo sed -i "s/password_here/$db_pass/g" /var/www/$domain_name/wp-config.php
+
+# Set the database host in the wp-config.php file
+sudo sed -i "s/localhost/localhost/g" /var/www/$domain_name/wp-config.php
+
 # Prompt the user for the IP address
 echo "Please enter your IP address:"
 read ip_address
@@ -82,3 +93,4 @@ echo "WordPress installed and configured for domain: $domain_name"
 echo "Database Name: $db_name"
 echo "Database User: $db_user"
 echo "Database Password: $db_pass"
+
