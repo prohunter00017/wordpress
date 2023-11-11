@@ -46,8 +46,13 @@ done
 echo "Please enter the repository SSH URL (e.g., git@github.com:username/repo.git):"
 read repo_url
 
-# Switch to the www-data user and clone the repository
-sudo su -l www-data -s /bin/bash << EOF
-GIT_SSH_COMMAND="ssh -i /var/www/$domain_name/id_rsa" git clone $repo_url /var/www/$domain_name
+# Check if the directory exists and is empty
+if [ -d "/var/www/$domain_name" ] && [ -z "$(ls -A /var/www/$domain_name)" ]; then
+    # Switch to the www-data user and clone the repository
+    sudo su -l www-data -s /bin/bash << EOF
+    GIT_SSH_COMMAND="ssh -i /var/www/$domain_name/id_rsa" git clone $repo_url /var/www/$domain_name
 EOF
-
+else
+    echo "The directory /var/www/$domain_name already exists and is not empty. Please choose a different domain name or empty the directory."
+    exit 1
+fi
