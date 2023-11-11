@@ -16,6 +16,11 @@ sudo systemctl start apache2
 echo "Please enter your domain:"
 read domain
 
+if [ -z "$domain" ]; then
+    echo "Domain is not set. Please enter a valid domain."
+    exit 1
+fi
+
 # Create the /var/www/$domain directory
 echo "Creating /var/www/$domain directory..."
 sudo mkdir -p /var/www/$domain
@@ -31,8 +36,16 @@ sudo chmod -R 755 /var/www/$domain
 echo "Please enter your SSH Git location:"
 read git_location
 
+if [ -z "$git_location" ]; then
+    echo "Git location is not set. Please enter a valid Git location."
+    exit 1
+fi
+
 echo "Cloning the repository to the /var/www/$domain directory..."
-sudo git clone $git_location /var/www/$domain
+if ! sudo git clone $git_location /var/www/$domain; then
+    echo "Failed to clone repository. Please check your Git location and try again."
+    exit 1
+fi
 
 echo "Please enter your GitHub username:"
 read username
