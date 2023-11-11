@@ -51,7 +51,9 @@ read repo_url
 # Switch to the www-data user and clone the repository
 sudo su -l www-data -s /bin/bash << EOF
 if [ -d "/var/www/$domain_name" ]; then
-    rm -rf /var/www/$domain_name
+    sudo rm -rf /var/www/$domain_name
 fi
+mkdir /var/www/$domain_name
+chown www-data:www-data /var/www/$domain_name
 GIT_SSH_COMMAND="ssh -i /var/www/$domain_name/id_rsa" git clone $repo_url /var/www/$domain_name
 EOF
