@@ -3,16 +3,15 @@
 # Prompt for the domain name
 read -p "Please enter your domain name: " domain_name
 
-# Prompt for database details
-read -p "Please enter your database name: " db_name
-read -p "Please enter your database user: " db_user
-read -s -p "Please enter your database password: " db_pass
-echo
+# Auto-generate database details
+db_name="${domain_name}_db"
+db_user="${domain_name}_user"
+db_pass=$(openssl rand -base64 12)
 
 # Check if domain name is provided
 if [ -z "$domain_name" ]; then
-    echo "Domain name is required."
-    exit 1
+  echo "Domain name is required."
+  exit 1
 fi
 
 # Update system
@@ -38,18 +37,18 @@ sudo mkdir -p /var/www/$domain_name
 sudo cp -a wordpress/. /var/www/$domain_name
 
 # Adjust Apache configuration for the given domain
-# Prompt for the IP address
-read -p "Please enter your IP address: " ip_address
+# Auto-detect the IP address
+ip_address=$(hostname -I | awk '{print $1}')
 
 # Create Apache configuration file for the domain
 sudo bash -c "cat > /etc/apache2/sites-available/$domain_name.conf <<EOF
 <VirtualHost $ip_address:80>
-    ServerAdmin iamhamzazoubir@outlook.com
-    ServerName $domain_name
-    ServerAlias www.$domain_name
-    DocumentRoot /var/www/$domain_name
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
+  ServerAdmin iamhamzazoubir@outlook.com
+  ServerName $domain_name
+  ServerAlias www.$domain_name
+  DocumentRoot /var/www/$domain_name
+  ErrorLog ${APACHE_LOG_DIR}/error.log
+  CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 EOF"
 
@@ -63,3 +62,6 @@ sudo systemctl reload apache2
 sudo systemctl restart apache2
 
 echo "WordPress installed and configured for domain: $domain_name"
+echo "Database Name: $db_name"
+echo "Database User: $db_user"
+echo "Database Password: $db_pass"
