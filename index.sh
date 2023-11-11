@@ -60,14 +60,6 @@ curl -X POST -H "Authorization: token $token" -H "Accept: application/vnd.github
   }
 }'
 
-# Install Certbot
-echo "Installing Certbot..."
-sudo apt-get install -y certbot python3-certbot-apache
-
-# Obtain and install SSL certificate
-echo "Obtaining and installing SSL certificate..."
-sudo certbot --apache -n --agree-tos --email zkounima1@protonmail.com -d $domain
-
 # Configure Apache to serve the website
 echo "Configuring Apache to serve the website..."
 echo "<VirtualHost *:80>
