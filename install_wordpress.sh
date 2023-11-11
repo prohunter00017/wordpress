@@ -1,46 +1,55 @@
 #!/bin/bash
 
-# Prompt for the domain name
-read -p "Please enter your domain name: " domain_name
+# Prompt the user for the domain name
+echo "Please enter your domain name:"
+read domain_name
 
-# Auto-generate database details
-db_name="${domain_name}_db"
-db_user="${domain_name}_user"
-db_pass=$(openssl rand -base64 12)
-
-# Check if domain name is provided
+# Check if the domain name is provided
 if [ -z "$domain_name" ]; then
   echo "Domain name is required."
   exit 1
 fi
 
-# Update system
+# Generate database details using the domain name
+db_name="${domain_name}_db"
+db_user="${domain_name}_user"
+db_pass=$(openssl rand -base64 12)
+
+# Update the system's package lists
 sudo apt update -y
+
+# Upgrade all the system's packages
 sudo apt upgrade -y
 
-# Install LAMP stack (Apache, MySQL, PHP)
+# Install Apache, MySQL, PHP (LAMP stack)
 sudo apt install apache2 mysql-server php libapache2-mod-php php-mysql -y
 
-# Configure database for WordPress
+# Create a new MySQL database for WordPress
 echo "CREATE DATABASE $db_name DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;" | sudo mysql -u root
+
+# Create a new MySQL user for WordPress and grant all privileges on the database to the user
 echo "GRANT ALL ON $db_name.* TO '$db_user'@'localhost' IDENTIFIED BY '$db_pass';" | sudo mysql -u root
+
+# Flush the MySQL privileges to apply changes
 echo "FLUSH PRIVILEGES;" | sudo mysql -u root
 
-# Download and set up WordPress with the provided domain name
+# Download the latest version of WordPress
 wget https://wordpress.org/latest.tar.gz
+
+# Extract the downloaded file
 tar xzvf latest.tar.gz
 
 # Create a new directory for the WordPress site
 sudo mkdir -p /var/www/$domain_name
 
-# Copy WordPress files to the new directory
+# Copy the extracted WordPress files to the new directory
 sudo cp -a wordpress/. /var/www/$domain_name
 
-# Adjust Apache configuration for the given domain
-# Auto-detect the IP address
-ip_address=$(hostname -I | awk '{print $1}')
+# Prompt the user for the IP address
+echo "Please enter your IP address:"
+read ip_address
 
-# Create Apache configuration file for the domain
+# Create an Apache configuration file for the new site
 sudo bash -c "cat > /etc/apache2/sites-available/$domain_name.conf <<EOF
 <VirtualHost $ip_address:80>
   ServerAdmin iamhamzazoubir@outlook.com
@@ -52,15 +61,22 @@ sudo bash -c "cat > /etc/apache2/sites-available/$domain_name.conf <<EOF
 </VirtualHost>
 EOF"
 
-# Enable the site
+# Enable the new site in Apache
 sudo a2ensite $domain_name.conf
 
-# Reload Apache to apply changes
+# Reload Apache to apply the changes
 sudo systemctl reload apache2
+
+# Install Certbot (Let's Encrypt client)
+sudo apt install certbot python3-certbot-apache -y
+
+# Obtain and install a certificate
+sudo certbot --apache -d $domain_name -d www.$domain_name --non-interactive --agree-tos --email iamhamzazoubir@outlook.com
 
 # Restart Apache
 sudo systemctl restart apache2
 
+# Print the WordPress and database details
 echo "WordPress installed and configured for domain: $domain_name"
 echo "Database Name: $db_name"
 echo "Database User: $db_user"
