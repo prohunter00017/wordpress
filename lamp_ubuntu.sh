@@ -53,7 +53,31 @@ sudo apt-get install php libapache2-mod-php php-mysql -y
 # This will create a test PHP file in the web root
 echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/test.php
 
+
+# Step 9: Install Git
+# This command installs Git, a distributed version control system.
+sudo apt-get install git -y
+
+# Step 10: Set up GitHub SSH
+# This command generates a new SSH key pair. You'll use this for authenticating with GitHub.
+ssh-keygen -t rsa -b 4096 -C "iamhamzazoubir@icloud.com"
+
+
+# This command starts the ssh-agent in the background.
+eval "$(ssh-agent -s)"
+
+# This command adds your SSH private key to the ssh-agent.
+ssh-add ~/.ssh/id_rsa
+
+# This command displays your public key. You'll need to add this to your GitHub account.
+cat ~/.ssh/id_rsa.pub
+
+
 # Print database details to the terminal
 echo "Database Name: $DB_NAME"
 echo "User Name: $DB_USER"
 echo "Password: $DB_PASSWORD"
+
+# Print SSH public key to the terminal
+echo "SSH Public Key:"
+cat ~/.ssh/id_rsa.pub
