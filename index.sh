@@ -42,17 +42,17 @@ if [ -z "$git_location" ]; then
 fi
 
 echo "Cloning the repository to the /var/www/$domain directory..."
-if [ -d "/var/www/$domain/.git" ]; then
-    echo "/var/www/$domain is a Git repository. Removing it..."
+if [ -d "/var/www/$domain" ]; then
+    echo "/var/www/$domain exists. Removing it..."
     sudo rm -rf /var/www/$domain
+    sleep 2  # Wait for 2 seconds to ensure the directory has been fully removed
 fi
-sudo mkdir -p /var/www/$domain
-sudo chown -R www-data:www-data /var/www/$domain
-sudo chmod -R 755 /var/www/$domain
 if ! sudo git clone $git_location /var/www/$domain; then
     echo "Failed to clone repository. Please check your Git location and try again."
     exit 1
 fi
+sudo chown -R www-data:www-data /var/www/$domain
+sudo chmod -R 755 /var/www/$domain
 
 echo "Please enter your GitHub username:"
 read username
